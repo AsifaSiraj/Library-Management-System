@@ -1,0 +1,185 @@
+<!-- <!DOCTYPE html>
+  <head>
+    <title>Online Library | Bookstore</title>
+  </head>
+  <body>
+    <nav>
+      <div class="menu-icon">
+        </div>
+        <div class="logo">Digital Library | Bookstore</div>    
+    </nav>
+
+    <div id="id01" class="modal">
+        <link rel="stylesheet" href="borrowBook1.css" />
+          <div id="book-box">
+              <div class="book-style">
+                <h1>You have successfully borrowed the book!</h1>
+            
+                <br>
+                <br>
+                <div class="background">
+                <img src="../src/images/libraryBook.jpg" style="max-width: 400%;">
+                </div>
+                <p>
+                    <br>
+                    
+            
+                </p>
+              </div>
+              <div class="input-data">
+                <a href="homepage.html">
+                <br>
+                <br>
+                <input type="submit" name="borrow" value="Back" />
+              </a>
+           
+            </div>
+          </div>
+     </div>
+  </body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online Library | Bookstore</title>
+</head>
+<body>
+    <nav>
+        <div class="menu-icon"></div>
+        <div class="logo">Digital Library</div>
+    </nav>
+    <div id="buyer-box">
+        <a href="table2.html">
+            <img class="arrow" src="../src/images/arrow.png" style="width: 20px; margin-left: 4%; margin-top: 3%;">
+        </a>
+        <h1 class="heading">Online Library and Bookstore</h1>
+        <div class="input-data">
+            <h1 style="margin-top: 55px;">Borrow Book</h1>
+            <link rel="stylesheet" href="../Frontend/borrowBookFillingPage.css" />
+            <input id="book_id1" type="text" placeholder="Book ID" name="book_id" />
+            <input id="book_title1" type="text" placeholder="Book Title" />
+            <input id="author_name1" type="text" placeholder="Author name" />
+            <input id="insert" type="submit" name="Borrow_book" value="Borrow" />
+            <input id="select" type="submit" name="select" value="Details" />   
+        </div>
+        <div class="right"></div>
+    </div>
+
+    <div id="firebaseui-auth-container"></div>
+    <div id="loader">Loading...</div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css" />
+
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script id="mainScript">
+        var firebaseConfig = {
+            apiKey: "AIzaSyDHJ_-ZQYPFVq7-NtsJXXMFKnga9dxGpVM",
+            authDomain: "library-20343.firebaseapp.com",
+            databaseURL: "https://library-20343-default-rtdb.firebaseio.com",
+            projectId: "library-20343",
+            storageBucket: "library-20343.appspot.com",
+            messagingSenderId: "212815264632",
+            appId: "1:212815264632:web:a934e86c5eb179e911e68d",
+            measurementId: "G-9EELX46W32"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        var ui = new firebaseui.auth.AuthUI(firebase.auth());
+        var uiConfig = {
+            callbacks: {
+                signInSuccessWithAuthResult: function(authResult, redirectUrl) {
+                    document.getElementById('borrow-book-form').style.display = 'block';
+                    document.getElementById('firebaseui-auth-container').style.display = 'none';
+                    return false;
+                },
+                uiShown: function() {
+                    document.getElementById('loader').style.display = 'none';
+                }
+            },
+            signInFlow: 'popup',
+            signInOptions: [
+                firebase.auth.EmailAuthProvider.PROVIDER_ID
+            ],
+            tosUrl: 'AdminPage.html',
+            privacyPolicyUrl: '<your-privacy-policy-url>'
+        };
+
+        ui.start('#firebaseui-auth-container', uiConfig);
+
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                document.getElementById('borrow-book-form').style.display = 'block';
+                document.getElementById('firebaseui-auth-container').style.display = 'none';
+            } else {
+                document.getElementById('borrow-book-form').style.display = 'none';
+                document.getElementById('firebaseui-auth-container').style.display = 'block';
+            }
+        });
+
+        function ready() {
+            bookID = document.getElementById('book_id1').value;
+            bookTITLE = document.getElementById('book_title1').value;
+            authorNAME = document.getElementById('author_name1').value;
+        }
+
+        function clear() {
+            document.getElementById('book_id1').value = null;
+            document.getElementById('book_title1').value = null;
+            document.getElementById('author_name1').value = null;
+        }
+
+        document.getElementById('insert').onclick = function () {
+            ready();
+            if(document.getElementById('book_id1').value == ""){
+                alert('Please enter Book ID.');
+            } 
+            else {
+                var user = firebase.auth().currentUser;
+                if (user) {
+                    var userEMAIL = user.email.replace('.com', '');
+                    firebase.database().ref('BorrowedBooks/' + userEMAIL + ' ' + bookID).set({
+                        bookId: bookID,
+                        bookTitle: bookTITLE,
+                        AuthorName: authorNAME,
+                        userEmail: user.email
+                    });
+                    swal({
+                        title: "Borrowed!", 
+                        text: "You borrowed the book.", 
+                        icon: "success"
+                    });
+                    clear();
+                } else {
+                    alert('Please sign in to borrow a book.');
+                }
+            }
+        }
+
+        document.getElementById('select').onclick = function () {
+            ready();
+            checkForBlanks();
+            firebase.database().ref('AddBook/' + bookID).on('value', function(snapshot){
+                document.getElementById('book_id1').value = snapshot.val().bookId;
+                document.getElementById('book_title1').value = snapshot.val().bookTitle;
+                document.getElementById('author_name1').value = snapshot.val().AuthorName;
+            })
+        }
+
+        function checkForBlanks() {
+            if(document.getElementById('book_id1').value == ""){
+                alert('Please enter Book ID.');
+            }
+            return false;  
+        }
+    </script>    
+</body>
+</html>
